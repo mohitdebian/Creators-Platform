@@ -1,4 +1,5 @@
 import React from "react";
+import ConnectionTest from "../components/common/ConnectionTest";
 function Home() {
   return (
     <div style={{ padding: "20px" }}>
@@ -11,6 +12,9 @@ function Home() {
         <li>Connect with others</li>
         <li>Grow your audience</li>
       </ul>
+
+      {/* Backend Connection Test */}
+      <ConnectionTest />
     </div>
   );
 }
