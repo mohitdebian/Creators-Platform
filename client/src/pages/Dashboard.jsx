@@ -1,34 +1,19 @@
 
-import React, { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+
+import React from "react";
+import { useAuth } from "../context/AuthContext";
+
 
 function Dashboard() {
-  const [user, setUser] = useState(null);
-  const navigate = useNavigate();
+  const { user, loading, isAuthenticated, logout } = useAuth();
 
-  useEffect(() => {
-    const token = localStorage.getItem("token");
-    const userData = localStorage.getItem("user");
-    if (!token || !userData) {
-      navigate("/login");
-      return;
-    }
-    try {
-      setUser(JSON.parse(userData));
-    } catch {
-      setUser(null);
-      navigate("/login");
-    }
-  }, [navigate]);
-
-  const handleLogout = () => {
-    localStorage.removeItem("token");
-    localStorage.removeItem("user");
-    navigate("/login");
-  };
-
-  if (!user) {
+  if (loading) {
     return <div style={{ padding: 20 }}>Loading...</div>;
+  }
+  if (!isAuthenticated()) {
+    // Optionally, you could use Navigate from react-router-dom for redirect
+    window.location.href = "/login";
+    return null;
   }
 
   return (
@@ -37,7 +22,7 @@ function Dashboard() {
       <div style={styles.infoBox}>
         <p><strong>Name:</strong> {user.name}</p>
         <p><strong>Email:</strong> {user.email}</p>
-        <button onClick={handleLogout} style={styles.logoutButton}>Logout</button>
+        <button onClick={logout} style={styles.logoutButton}>Logout</button>
       </div>
     </div>
   );

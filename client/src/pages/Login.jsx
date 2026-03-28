@@ -1,14 +1,17 @@
 
+
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
 
 
 function Login() {
   const [formData, setFormData] = useState({ email: "", password: "" });
   const [errors, setErrors] = useState({});
-  const [isLoading, setIsLoading] = useState(false);
   const [apiError, setApiError] = useState("");
   const navigate = useNavigate();
+  const { login, loading } = useAuth();
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -44,8 +47,7 @@ function Login() {
       });
       const data = await res.json();
       if (res.ok) {
-        localStorage.setItem("token", data.token);
-        localStorage.setItem("user", JSON.stringify(data.user));
+        login(data.user, data.token);
         navigate("/dashboard");
       } else {
         setApiError(data.message || "Login failed. Please try again.");
@@ -91,10 +93,10 @@ function Login() {
         </div>
         <button
           type="submit"
-          style={{ ...styles.button, ...(isLoading ? styles.buttonDisabled : {}) }}
-          disabled={isLoading}
+          style={{ ...styles.button, ...(isLoading || loading ? styles.buttonDisabled : {}) }}
+          disabled={isLoading || loading}
         >
-          {isLoading ? "Logging in..." : "Login"}
+          {isLoading || loading ? "Logging in..." : "Login"}
         </button>
         {apiError && <div style={styles.apiError}>{apiError}</div>}
       </form>
