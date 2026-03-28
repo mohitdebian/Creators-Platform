@@ -1,8 +1,10 @@
 
 
+
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
+import api from "../services/api";
 
 
 function Login() {
@@ -40,20 +42,15 @@ function Login() {
         email: formData.email.trim().toLowerCase(),
         password: formData.password,
       };
-      const res = await fetch("/api/auth/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      });
-      const data = await res.json();
-      if (res.ok) {
-        login(data.user, data.token);
-        navigate("/dashboard");
-      } else {
-        setApiError(data.message || "Login failed. Please try again.");
-      }
+      const res = await api.post("/api/auth/login", payload);
+      login(res.data.user, res.data.token);
+      navigate("/dashboard");
     } catch (err) {
-      setApiError("Unable to connect to server. Please try again later.");
+      if (err.response && err.response.data && err.response.data.message) {
+        setApiError(err.response.data.message);
+      } else {
+        setApiError("Unable to connect to server. Please try again later.");
+      }
     } finally {
       setIsLoading(false);
     }
