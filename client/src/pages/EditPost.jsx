@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
+import { toast } from "react-toastify";
 import api from "../services/api";
 
 function EditPost() {
   const { id } = useParams();
   const [form, setForm] = useState({ title: "", content: "" });
-  const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [fetching, setFetching] = useState(true);
   const navigate = useNavigate();
@@ -19,7 +19,7 @@ function EditPost() {
           content: res.data.post.content,
         });
       } catch (err) {
-        setError("Failed to fetch post or unauthorized.");
+        toast.error("Failed to fetch post or unauthorized.");
       } finally {
         setFetching(false);
       }
@@ -29,22 +29,21 @@ function EditPost() {
 
   const handleChange = (e) => {
     setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }));
-    setError("");
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError("");
     if (!form.title.trim() || !form.content.trim()) {
-      setError("Title and content are required");
+      toast.error("Title and content are required");
       return;
     }
     setLoading(true);
     try {
       await api.put(`/api/posts/${id}`, form);
+      toast.success("Post updated successfully!");
       navigate("/dashboard");
     } catch (err) {
-      setError(
+      toast.error(
         err.response?.data?.message || "Failed to update post. Please try again."
       );
     } finally {
@@ -75,7 +74,6 @@ function EditPost() {
           onChange={handleChange}
           style={styles.textarea}
         />
-        {error && <div style={styles.error}>{error}</div>}
         <div style={{ display: "flex", gap: "10px" }}>
           <button type="button" onClick={() => navigate("/dashboard")} style={styles.cancelBtn}>
             Cancel

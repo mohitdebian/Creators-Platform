@@ -1,31 +1,30 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { toast } from "react-toastify";
 import api from "../services/api";
 
 function CreatePost() {
   const [form, setForm] = useState({ title: "", content: "" });
-  const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
   const handleChange = (e) => {
     setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }));
-    setError("");
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError("");
     if (!form.title.trim() || !form.content.trim()) {
-      setError("Title and content are required");
+      toast.error("Title and content are required");
       return;
     }
     setLoading(true);
     try {
       await api.post("/api/posts", form);
+      toast.success("Post created successfully!");
       navigate("/dashboard");
     } catch (err) {
-      setError(
+      toast.error(
         err.response?.data?.message || "Failed to create post. Please try again."
       );
     } finally {
@@ -52,7 +51,6 @@ function CreatePost() {
           onChange={handleChange}
           style={styles.textarea}
         />
-        {error && <div style={styles.error}>{error}</div>}
         <button type="submit" style={styles.button} disabled={loading}>
           {loading ? "Creating..." : "Create Post"}
         </button>
