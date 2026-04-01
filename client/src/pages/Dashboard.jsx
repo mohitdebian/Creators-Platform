@@ -44,6 +44,20 @@ function Dashboard() {
     return null;
   }
 
+  const handleDelete = async (postId) => {
+    if (window.confirm("Are you sure you want to delete this post?")) {
+      const prevPosts = [...posts];
+      setPosts(posts.filter((post) => post._id !== postId));
+
+      try {
+        await api.delete(`/api/posts/${postId}`);
+      } catch (err) {
+        setPosts(prevPosts);
+        alert("Failed to delete post");
+      }
+    }
+  };
+
   return (
     <div style={styles.container}>
       <h1 style={styles.title}>Dashboard</h1>
@@ -71,6 +85,17 @@ function Dashboard() {
                 <p style={{ margin: "8px 0 0 0", color: "#444" }}>{post.content}</p>
                 <div style={{ fontSize: 12, color: "#888", marginTop: 8 }}>
                   {new Date(post.createdAt).toLocaleString()}
+                </div>
+                <div style={{ marginTop: 12, display: "flex", gap: "8px" }}>
+                  <Link to={`/edit/${post._id}`} style={styles.editBtn}>
+                    Edit
+                  </Link>
+                  <button
+                    onClick={() => handleDelete(post._id)}
+                    style={styles.deleteBtn}
+                  >
+                    Delete
+                  </button>
                 </div>
               </div>
             ))}
@@ -188,6 +213,27 @@ const styles = {
     fontWeight: 500,
     marginTop: 8,
     textAlign: "center",
+  },
+  editBtn: {
+    padding: "6px 14px",
+    fontSize: 13,
+    background: "#f59e0b",
+    color: "#fff",
+    border: "none",
+    borderRadius: 6,
+    cursor: "pointer",
+    fontWeight: 500,
+    textDecoration: "none",
+  },
+  deleteBtn: {
+    padding: "6px 14px",
+    fontSize: 13,
+    background: "#ef4444",
+    color: "#fff",
+    border: "none",
+    borderRadius: 6,
+    cursor: "pointer",
+    fontWeight: 500,
   },
 };
 
