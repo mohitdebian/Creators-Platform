@@ -5,6 +5,7 @@ import connectDB from "./config/database.js";
 import userRoutes from "./routes/userRoutes.js";
 import authRoutes from "./routes/authRoutes.js";
 import postRoutes from "./routes/postRoutes.js";
+import { errorHandler } from "./middleware/errorMiddleware.js";
 
 dotenv.config();
 connectDB();
@@ -23,7 +24,7 @@ app.use(
 app.use(express.json());
 
 // Health check
-app.get("/api/health", (req, res) => {
+app.get("/api/health", (req, res, next) => {
   res.json({ status: "Server is running" });
 });
 
@@ -31,6 +32,9 @@ app.get("/api/health", (req, res) => {
 app.use("/api/users", userRoutes);
 app.use("/api/auth", authRoutes);
 app.use("/api/posts", postRoutes);
+
+// Error Middleware (must be after routes)
+app.use(errorHandler);
 
 // Server start
 const PORT = process.env.PORT || 5000;

@@ -1,7 +1,7 @@
 
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-
+import { toast } from "react-toastify";
 
 function Register() {
   const [formData, setFormData] = useState({
@@ -12,8 +12,6 @@ function Register() {
   });
   const [errors, setErrors] = useState({});
   const [isLoading, setIsLoading] = useState(false);
-  const [successMessage, setSuccessMessage] = useState("");
-  const [apiError, setApiError] = useState("");
   const navigate = useNavigate();
 
   // Handle input changes
@@ -23,8 +21,6 @@ function Register() {
     if (errors[name]) {
       setErrors((prev) => ({ ...prev, [name]: "" }));
     }
-    setApiError("");
-    setSuccessMessage("");
   };
 
   // Validation function
@@ -51,8 +47,6 @@ function Register() {
   // Handle form submission
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setApiError("");
-    setSuccessMessage("");
     if (!validateForm()) return;
     setIsLoading(true);
     try {
@@ -68,14 +62,14 @@ function Register() {
       });
       const data = await res.json();
       if (res.ok) {
-        setSuccessMessage(data.message || "Registration successful! Redirecting to login...");
+        toast.success(data.message || "Registration successful! Redirecting to login...");
         setFormData({ name: "", email: "", password: "", confirmPassword: "" });
         setTimeout(() => navigate("/login"), 2000);
       } else {
-        setApiError(data.message || "Registration failed. Please try again.");
+        toast.error(data.message || "Registration failed. Please try again.");
       }
     } catch (err) {
-      setApiError("Unable to connect to server. Please try again later.");
+      toast.error("Unable to connect to server. Please try again later.");
     } finally {
       setIsLoading(false);
     }
@@ -148,8 +142,6 @@ function Register() {
         >
           {isLoading ? "Creating Account..." : "Sign Up"}
         </button>
-        {apiError && <div style={styles.apiError}>{apiError}</div>}
-        {successMessage && <div style={styles.success}>{successMessage}</div>}
       </form>
       <p style={{ marginTop: 24 }}>
         Already have an account? <Link to="/login">Login here</Link>

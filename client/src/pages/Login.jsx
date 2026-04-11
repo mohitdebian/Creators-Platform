@@ -3,14 +3,13 @@
 
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { toast } from "react-toastify";
 import { useAuth } from "../context/AuthContext";
 import api from "../services/api";
-
 
 function Login() {
   const [formData, setFormData] = useState({ email: "", password: "" });
   const [errors, setErrors] = useState({});
-  const [apiError, setApiError] = useState("");
   const navigate = useNavigate();
   const { login, loading } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
@@ -21,7 +20,6 @@ function Login() {
     if (errors[name]) {
       setErrors((prev) => ({ ...prev, [name]: "" }));
     }
-    setApiError("");
   };
 
   const validateForm = () => {
@@ -34,7 +32,6 @@ function Login() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setApiError("");
     if (!validateForm()) return;
     setIsLoading(true);
     try {
@@ -43,13 +40,14 @@ function Login() {
         password: formData.password,
       };
       const res = await api.post("/api/auth/login", payload);
+      toast.success("Login successful!");
       login(res.data.user, res.data.token);
       navigate("/dashboard");
     } catch (err) {
       if (err.response && err.response.data && err.response.data.message) {
-        setApiError(err.response.data.message);
+        toast.error(err.response.data.message);
       } else {
-        setApiError("Unable to connect to server. Please try again later.");
+        toast.error("Unable to connect to server. Please try again later.");
       }
     } finally {
       setIsLoading(false);
@@ -95,10 +93,9 @@ function Login() {
         >
           {isLoading || loading ? "Logging in..." : "Login"}
         </button>
-        {apiError && <div style={styles.apiError}>{apiError}</div>}
       </form>
       <p style={{ marginTop: 24 }}>
-        Dont have an account? <Link to="/register">Register here</Link>
+        Don't have an account? <Link to="/register">Register here</Link>
       </p>
     </div>
   );

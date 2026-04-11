@@ -1,11 +1,13 @@
 import Post from "../models/Post.js";
 
 // Create a new post
-export const createPost = async (req, res) => {
+export const createPost = async (req, res, next) => {
   try {
     const { title, content } = req.body;
     if (!title || !content) {
-      return res.status(400).json({ success: false, message: "Title and content are required" });
+      const err = new Error("Title and content are required");
+      err.status = 400;
+      return next(err);
     }
     const post = await Post.create({
       title,
@@ -14,12 +16,12 @@ export const createPost = async (req, res) => {
     });
     res.status(201).json({ success: true, post });
   } catch (err) {
-    res.status(500).json({ success: false, message: "Server error" });
+    next(err);
   }
 };
 
 // Get paginated posts for the logged-in user
-export const getPosts = async (req, res) => {
+export const getPosts = async (req, res, next) => {
   try {
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 10;
@@ -41,40 +43,48 @@ export const getPosts = async (req, res) => {
       hasPrevPage: page > 1,
     });
   } catch (err) {
-    res.status(500).json({ success: false, message: "Server error" });
+    next(err);
   }
 };
 
 // Get single post by ID
-export const getPostById = async (req, res) => {
+export const getPostById = async (req, res, next) => {
   try {
     const post = await Post.findById(req.params.id);
     if (!post) {
-      return res.status(404).json({ success: false, message: "Post not found" });
+      const err = new Error("Post not found");
+      err.status = 404;
+      return next(err);
     }
     // Check ownership
     if (post.author.toString() !== req.user._id.toString()) {
-      return res.status(403).json({ success: false, message: "Not authorized to view this post" });
+      const err = new Error("Not authorized to view this post");
+      err.status = 403;
+      return next(err);
     }
     res.status(200).json({ success: true, post });
   } catch (err) {
-    res.status(500).json({ success: false, message: "Server error" });
+    next(err);
   }
 };
 
 // Update post
-export const updatePost = async (req, res) => {
+export const updatePost = async (req, res, next) => {
   try {
     const { title, content } = req.body;
     let post = await Post.findById(req.params.id);
 
     if (!post) {
-      return res.status(404).json({ success: false, message: "Post not found" });
+      const err = new Error("Post not found");
+      err.status = 404;
+      return next(err);
     }
 
     // Check ownership
     if (post.author.toString() !== req.user._id.toString()) {
-      return res.status(403).json({ success: false, message: "Not authorized to update this post" });
+      const err = new Error("Not authorized to update this post");
+      err.status = 403;
+      return next(err);
     }
 
     post = await Post.findByIdAndUpdate(
@@ -85,27 +95,31 @@ export const updatePost = async (req, res) => {
 
     res.status(200).json({ success: true, post });
   } catch (err) {
-    res.status(500).json({ success: false, message: "Server error" });
+    next(err);
   }
 };
 
 // Delete post
-export const deletePost = async (req, res) => {
+export const deletePost = async (req, res, next) => {
   try {
     const post = await Post.findById(req.params.id);
 
     if (!post) {
-      return res.status(404).json({ success: false, message: "Post not found" });
+      const err = new Error("Post not found");
+      err.status = 404;
+      return next(err);
     }
 
     // Check ownership
     if (post.author.toString() !== req.user._id.toString()) {
-      return res.status(403).json({ success: false, message: "Not authorized to delete this post" });
+      const err = new Error("You don't have permission to delete this post");
+      err.status = 403;
+      return next(err);
     }
 
     await post.deleteOne();
     res.status(200).json({ success: true, message: "Post deleted successfully" });
   } catch (err) {
-    res.status(500).json({ success: false, message: "Server error" });
+    next(err);
   }
 };

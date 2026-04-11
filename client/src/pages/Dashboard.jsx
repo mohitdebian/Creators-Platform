@@ -4,8 +4,8 @@
 import React, { useEffect, useState } from "react";
 import { useAuth } from "../context/AuthContext";
 import { Link } from "react-router-dom";
+import { toast } from "react-toastify";
 import api from "../services/api";
-
 
 function Dashboard() {
   const { user, loading, isAuthenticated, logout } = useAuth();
@@ -14,21 +14,19 @@ function Dashboard() {
   const [totalPages, setTotalPages] = useState(1);
   const [total, setTotal] = useState(0);
   const [fetching, setFetching] = useState(false);
-  const [error, setError] = useState("");
   const limit = 10;
 
   useEffect(() => {
     if (!isAuthenticated()) return;
     const fetchPosts = async () => {
       setFetching(true);
-      setError("");
       try {
         const res = await api.get(`/api/posts?page=${page}&limit=${limit}`);
         setPosts(res.data.posts);
         setTotalPages(res.data.totalPages);
         setTotal(res.data.total);
       } catch (err) {
-        setError("Failed to fetch posts.");
+        toast.error(err.response?.data?.message || "Failed to fetch posts.");
       } finally {
         setFetching(false);
       }
@@ -51,9 +49,10 @@ function Dashboard() {
 
       try {
         await api.delete(`/api/posts/${postId}`);
+        toast.success("Post deleted successfully");
       } catch (err) {
         setPosts(prevPosts);
-        alert("Failed to delete post");
+        toast.error(err.response?.data?.message || "Failed to delete post");
       }
     }
   };
@@ -72,8 +71,6 @@ function Dashboard() {
       <h2 style={{ textAlign: "center", marginBottom: 12 }}>Your Posts</h2>
       {fetching ? (
         <div style={{ textAlign: "center" }}>Loading posts...</div>
-      ) : error ? (
-        <div style={styles.error}>{error}</div>
       ) : posts.length === 0 ? (
         <div style={{ textAlign: "center", color: "#888" }}>No posts found.</div>
       ) : (
